@@ -61,9 +61,9 @@ pipeline
 				printMsg([
 					"[빌드정보]",
 					"모듈명         : "	+ MODULE_NAME,
-					"넥서스이미지명  : "	+ NEXUS_IMG_NAME,
+					// "넥서스이미지명  : "	+ NEXUS_IMG_NAME,
 					"빌드버전       : "	+ BUILD_VERSION,
-					"브랜치         : "	+ BRANCH_NAME
+					// "브랜치         : "	+ BRANCH_NAME
 				])
 
 				echo '==================== [VERSION CHECK 종료] ===================='
