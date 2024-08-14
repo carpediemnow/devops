@@ -95,172 +95,172 @@ pipeline
 		}
 
 
-		stage ( 'Image Check' )
-		{
-			steps
-			{
-				echo '==================== [IMAGE CHECK 시작] ===================='
+	// 	stage ( 'Image Check' )
+	// 	{
+	// 		steps
+	// 		{
+	// 			echo '==================== [IMAGE CHECK 시작] ===================='
 
-				script
-				{
-					withCredentials([usernamePassword(credentialsId: NEXUS_CRED_ID , usernameVariable: 'CRED_USR' , passwordVariable: 'CRED_PSW')])
-					{
-						def paramters	= "repository=maven-releases&group=${GROUP_ID}&name=${ARTIFACT_NAME}&version=${BUILD_VERSION}"
-						def response	= sh(script: "curl -X GET -s -u ${CRED_USR}:${CRED_PSW} '${NEXUS_API_URL}?${paramters}'", returnStdout: true).trim()
-						def json		= new groovy.json.JsonSlurper().parseText(response)
+	// 			script
+	// 			{
+	// 				withCredentials([usernamePassword(credentialsId: NEXUS_CRED_ID , usernameVariable: 'CRED_USR' , passwordVariable: 'CRED_PSW')])
+	// 				{
+	// 					def paramters	= "repository=maven-releases&group=${GROUP_ID}&name=${ARTIFACT_NAME}&version=${BUILD_VERSION}"
+	// 					def response	= sh(script: "curl -X GET -s -u ${CRED_USR}:${CRED_PSW} '${NEXUS_API_URL}?${paramters}'", returnStdout: true).trim()
+	// 					def json		= new groovy.json.JsonSlurper().parseText(response)
 
-						if ( json.items.size() != 0 )
-						{
-							printMsg([
-								"[오류] 이미 존재하는 버전입니다.",
-								"[이미지명:버전] " + NEXUS_IMG_NAME + ":" + BUILD_VERSION
-							])
+	// 					if ( json.items.size() != 0 )
+	// 					{
+	// 						printMsg([
+	// 							"[오류] 이미 존재하는 버전입니다.",
+	// 							"[이미지명:버전] " + NEXUS_IMG_NAME + ":" + BUILD_VERSION
+	// 						])
 
-							error("[오류] 이미 존재하는 버전입니다.")
-						}
-					}
-				}
+	// 						error("[오류] 이미 존재하는 버전입니다.")
+	// 					}
+	// 				}
+	// 			}
 
-				echo '==================== [IMAGE CHECK 종료] ===================='
-			}
-		}
+	// 			echo '==================== [IMAGE CHECK 종료] ===================='
+	// 		}
+	// 	}
 
 
-		stage ( 'Source Clone' )
-		{
-			steps
-			{
-				echo '==================== [SOURCE CLONE 시작] ===================='
+	// 	stage ( 'Source Clone' )
+	// 	{
+	// 		steps
+	// 		{
+	// 			echo '==================== [SOURCE CLONE 시작] ===================='
 
-				withCredentials([usernamePassword(credentialsId: GIT_CRED_ID , usernameVariable: 'CRED_USR' , passwordVariable: 'CRED_PSW')])
-				{
-					sh '''
-						mkdir -p ${WORKSPACE}/${MODULE_NAME}
-						cd ${WORKSPACE}/${MODULE_NAME}
+	// 			withCredentials([usernamePassword(credentialsId: GIT_CRED_ID , usernameVariable: 'CRED_USR' , passwordVariable: 'CRED_PSW')])
+	// 			{
+	// 				sh '''
+	// 					mkdir -p ${WORKSPACE}/${MODULE_NAME}
+	// 					cd ${WORKSPACE}/${MODULE_NAME}
 	
-						git config --global user.email "${GIT_NAMESPACE}@kt.com"
-						git config --global user.name "${GIT_NAMESPACE}"
+	// 					git config --global user.email "${GIT_NAMESPACE}@kt.com"
+	// 					git config --global user.name "${GIT_NAMESPACE}"
 	
-						if [ -d ./.git ]; then
-							git remote update
-							git checkout ${BRANCH_NAME}
-							git fetch --prune origin
-							git reset --hard origin/${BRANCH_NAME}
-						else
-							git clone "https://${CRED_USR}:${CRED_PSW}@${GIT_PRJT_URL}" .
-						fi
-					'''
-				}
+	// 					if [ -d ./.git ]; then
+	// 						git remote update
+	// 						git checkout ${BRANCH_NAME}
+	// 						git fetch --prune origin
+	// 						git reset --hard origin/${BRANCH_NAME}
+	// 					else
+	// 						git clone "https://${CRED_USR}:${CRED_PSW}@${GIT_PRJT_URL}" .
+	// 					fi
+	// 				'''
+	// 			}
 
-				echo '==================== [SOURCE CLONE 종료] ===================='
-			}
-		}
+	// 			echo '==================== [SOURCE CLONE 종료] ===================='
+	// 		}
+	// 	}
 
 
-		stage ( 'Devops Clone' )
-		{
-			steps
-			{
-				echo '==================== [DEVOPS CLONE 시작] ===================='
+	// 	stage ( 'Devops Clone' )
+	// 	{
+	// 		steps
+	// 		{
+	// 			echo '==================== [DEVOPS CLONE 시작] ===================='
 
-				withCredentials([usernamePassword(credentialsId:GIT_CRED_ID,usernameVariable: 'CRED_USR', passwordVariable: 'CRED_PSW')])
-				{
-					sh '''
-						mkdir -p ${WORKSPACE}/devops
-						cd ${WORKSPACE}/devops
+	// 			withCredentials([usernamePassword(credentialsId:GIT_CRED_ID,usernameVariable: 'CRED_USR', passwordVariable: 'CRED_PSW')])
+	// 			{
+	// 				sh '''
+	// 					mkdir -p ${WORKSPACE}/devops
+	// 					cd ${WORKSPACE}/devops
 	
-						if [ -d ./.git ]; then
-							git checkout main
-							git fetch --prune origin
-							git reset --hard origin/main
-						else
-							git clone -b main "https://${CRED_USR}:${CRED_PSW}@${GIT_URL}/${GIT_NAMESPACE}/devops.git" .
-						fi
-					'''
-				}
+	// 					if [ -d ./.git ]; then
+	// 						git checkout main
+	// 						git fetch --prune origin
+	// 						git reset --hard origin/main
+	// 					else
+	// 						git clone -b main "https://${CRED_USR}:${CRED_PSW}@${GIT_URL}/${GIT_NAMESPACE}/devops.git" .
+	// 					fi
+	// 				'''
+	// 			}
 
-				echo '==================== [DEVOPS CLONE 종료] ===================='
-			}
-		}
+	// 			echo '==================== [DEVOPS CLONE 종료] ===================='
+	// 		}
+	// 	}
 
 
-		stage ( 'Image Build' )
-		{
-			steps
-			{
-				echo '==================== [IMAGE BUILD 시작] ===================='
+	// 	stage ( 'Image Build' )
+	// 	{
+	// 		steps
+	// 		{
+	// 			echo '==================== [IMAGE BUILD 시작] ===================='
 
-				sh '''
-					cd ${WORKSPACE}/${MODULE_NAME}
-					git checkout ${BRANCH_NAME}
+	// 			sh '''
+	// 				cd ${WORKSPACE}/${MODULE_NAME}
+	// 				git checkout ${BRANCH_NAME}
 					
-					if [ "${BUILD_TOOL}" == "gradle" ]; then
-						cp ${WORKSPACE}/devops/etc/gradle.properties ${WORKSPACE}/${MODULE_NAME}
-						chmod 751 ./gradlew
-						./gradlew -debug clean build ${BUILD_OPTION} -xtest -b build.gradle --gradle-user-home=${WORKSPACE}
-					else
-						mvn clean package ${BUILD_OPTION} -DskipTests=true --settings=${WORKSPACE}/devops/etc/settings.xml
-					fi
-				'''
+	// 				if [ "${BUILD_TOOL}" == "gradle" ]; then
+	// 					cp ${WORKSPACE}/devops/etc/gradle.properties ${WORKSPACE}/${MODULE_NAME}
+	// 					chmod 751 ./gradlew
+	// 					./gradlew -debug clean build ${BUILD_OPTION} -xtest -b build.gradle --gradle-user-home=${WORKSPACE}
+	// 				else
+	// 					mvn clean package ${BUILD_OPTION} -DskipTests=true --settings=${WORKSPACE}/devops/etc/settings.xml
+	// 				fi
+	// 			'''
 
-				echo '==================== [IMAGE BUILD 종료] ===================='
-			}
+	// 			echo '==================== [IMAGE BUILD 종료] ===================='
+	// 		}
 
-		}
+	// 	}
 
-		stage ( 'Image Push' )
-		{
-			steps
-			{
-				echo '==================== [IMAGE PUSH 시작] ===================='
+	// 	stage ( 'Image Push' )
+	// 	{
+	// 		steps
+	// 		{
+	// 			echo '==================== [IMAGE PUSH 시작] ===================='
 
-				sh '''
-					cd ${WORKSPACE}/${MODULE_NAME}
+	// 			sh '''
+	// 				cd ${WORKSPACE}/${MODULE_NAME}
 					
-					./gradlew publish -PmyVersion=${BUILD_VERSION}
-				'''
+	// 				./gradlew publish -PmyVersion=${BUILD_VERSION}
+	// 			'''
 				
-				withCredentials([usernamePassword(credentialsId: GIT_CRED_ID , usernameVariable: 'CRED_USR' , passwordVariable: 'CRED_PSW')])
-				{
-					sh '''
-						cd ${WORKSPACE}/${MODULE_NAME}
+	// 			withCredentials([usernamePassword(credentialsId: GIT_CRED_ID , usernameVariable: 'CRED_USR' , passwordVariable: 'CRED_PSW')])
+	// 			{
+	// 				sh '''
+	// 					cd ${WORKSPACE}/${MODULE_NAME}
 
-						git config --global user.email "${NAMESPACE}@kt.com"
-						git config --global user.name "${NAMESPACE}"
-						git checkout ${BRANCH_NAME}
+	// 					git config --global user.email "${NAMESPACE}@kt.com"
+	// 					git config --global user.name "${NAMESPACE}"
+	// 					git checkout ${BRANCH_NAME}
 
-						if [ ! -z $(git tag -l "${GIT_TAG_NAME}") ] ; then
-							git tag --delete ${GIT_TAG_NAME}
-							git push https://${CRED_USR}:${CRED_PSW}@${GIT_PRJT_URL} --delete ${GIT_TAG_NAME}
-						fi
+	// 					if [ ! -z $(git tag -l "${GIT_TAG_NAME}") ] ; then
+	// 						git tag --delete ${GIT_TAG_NAME}
+	// 						git push https://${CRED_USR}:${CRED_PSW}@${GIT_PRJT_URL} --delete ${GIT_TAG_NAME}
+	// 					fi
 
-						git tag ${GIT_TAG_NAME}
-						git push https://${CRED_USR}:${CRED_PSW}@${GIT_PRJT_URL} ${GIT_TAG_NAME}
-					'''
-				}
+	// 					git tag ${GIT_TAG_NAME}
+	// 					git push https://${CRED_USR}:${CRED_PSW}@${GIT_PRJT_URL} ${GIT_TAG_NAME}
+	// 				'''
+	// 			}
 
-				echo '==================== [IMAGE PUSH 종료] ===================='
-			}
-		}
+	// 			echo '==================== [IMAGE PUSH 종료] ===================='
+	// 		}
+	// 	}
 
 
-	}
+	// }
 
-	post
-	{
-		always
-		{
-			echo '==================== [빌드종료] ===================='
-		}
-		success
-		{
-			echo '==================== [빌드성공] ===================='
-		}
-		failure
-		{
-			echo '==================== [빌드실패] ===================='
-		}
-	}
+	// post
+	// {
+	// 	always
+	// 	{
+	// 		echo '==================== [빌드종료] ===================='
+	// 	}
+	// 	success
+	// 	{
+	// 		echo '==================== [빌드성공] ===================='
+	// 	}
+	// 	failure
+	// 	{
+	// 		echo '==================== [빌드실패] ===================='
+	// 	}
+	// }
 
 }
 
