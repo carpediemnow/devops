@@ -1,7 +1,31 @@
+def setDockerImage(){
+	def imageNameGradle = "nexus.dspace.kt.co.kr/devspace/projects/robotplatform:jdk17-gradle7.4.2"
+	def imageNameNpm = "devspace/agent/node:20.11.1"
+	def buildToolName = "${env.BUILD_TOOL}"
+
+	if (buildToolName == "gradle") {
+		return imageNameGradle
+	} else if (buildToolName == "npm") {
+		return imageNameNpm
+	}
+
+	return error("[오류] BuildTool이 올바르지 않습니다.")
+}
+
 pipeline 
 {
     
 	agent any
+	// agent
+	// {
+	// 	docker
+	// 	{
+	// 		image setDockerImage()
+	// 		args '-u root:root -v /var/run/docker.sock:/var/run/docker.sock'
+	// 		registryUrl 'https://nexus.dspace.kt.co.kr'
+	// 		registryCredentialsId 'devSpaceCICD_Nexus'
+	// 	}
+	// }
     
 	options
 	{
@@ -63,7 +87,7 @@ pipeline
 					"모듈명         : "	+ MODULE_NAME,
 					// "넥서스이미지명  : "	+ NEXUS_IMG_NAME,
 					"빌드버전       : "	+ BUILD_VERSION,
-					// "브랜치         : "	+ BRANCH_NAME
+					"브랜치         : "	+ BRANCH_NAME
 				])
 
 				echo '==================== [VERSION CHECK 종료] ===================='
@@ -76,6 +100,28 @@ pipeline
 			{
                 echo '==================== [IMAGE CHECK 시작] ===================='
 
+				// Nexus 사용 안함. 추후 변경 필요
+				// script
+				// {
+				// 	withCredentials([usernamePassword(credentialsId: NEXUS_CRED_ID , usernameVariable: 'CRED_USR' , passwordVariable: 'CRED_PSW')])
+				// 	{
+				// 		def paramters	= "repository=maven-releases&group=${GROUP_ID}&name=${ARTIFACT_NAME}&version=${BUILD_VERSION}"
+				// 		def response	= sh(script: "curl -X GET -s -u ${CRED_USR}:${CRED_PSW} '${NEXUS_API_URL}?${paramters}'", returnStdout: true).trim()
+				// 		def json		= new groovy.json.JsonSlurper().parseText(response)
+
+				// 		if ( json.items.size() != 0 )
+				// 		{
+				// 			printMsg([
+				// 				"[오류] 이미 존재하는 버전입니다.",
+				// 				"[이미지명:버전] " + NEXUS_IMG_NAME + ":" + BUILD_VERSION
+				// 			])
+
+				// 			error("[오류] 이미 존재하는 버전입니다.")
+				// 		}
+				// 	}
+				// }
+
+
 				echo '==================== [IMAGE CHECK 종료] ===================='
             }
         }
@@ -85,7 +131,27 @@ pipeline
             steps 
 			{
                 echo '==================== [SOURCE CLONE 시작] ===================='
-
+				
+				// 젠킨스 설정에서 처리
+				// withCredentials([usernamePassword(credentialsId: GIT_CRED_ID , usernameVariable: 'CRED_USR' , passwordVariable: 'CRED_PSW')])
+				// {
+				// 	sh '''
+				// 		mkdir -p ${WORKSPACE}/${MODULE_NAME}
+				// 		cd ${WORKSPACE}/${MODULE_NAME}
+	
+				// 		git config --global user.email "${GIT_NAMESPACE}@kt.com"
+				// 		git config --global user.name "${GIT_NAMESPACE}"
+	
+				// 		if [ -d ./.git ]; then
+				// 			git remote update
+				// 			git checkout ${BRANCH_NAME}
+				// 			git fetch --prune origin
+				// 			git reset --hard origin/${BRANCH_NAME}
+				// 		else
+				// 			git clone "https://${CRED_USR}:${CRED_PSW}@${GIT_PRJT_URL}" .
+				// 		fi
+				// 	'''
+				// }
 
 				echo '==================== [SOURCE CLONE 종료] ===================='
             }
@@ -97,6 +163,23 @@ pipeline
 			{
 				echo '==================== [DEVOPS CLONE 시작] ===================='
 
+				// 왜 필요한지 추후 파악 필요
+				// withCredentials([usernamePassword(credentialsId:GIT_CRED_ID,usernameVariable: 'CRED_USR', passwordVariable: 'CRED_PSW')])
+				// {
+				// 	sh '''
+				// 		mkdir -p ${WORKSPACE}/devops
+				// 		cd ${WORKSPACE}/devops
+	
+				// 		if [ -d ./.git ]; then
+				// 			git checkout main
+				// 			git fetch --prune origin
+				// 			git reset --hard origin/main
+				// 		else
+				// 			git clone -b main "https://${CRED_USR}:${CRED_PSW}@${GIT_URL}/${GIT_NAMESPACE}/devops.git" .
+				// 		fi
+				// 	'''
+				// }
+
 				echo '==================== [DEVOPS CLONE 종료] ===================='
 			}
 
@@ -107,6 +190,21 @@ pipeline
 			steps
 			{
 				echo '==================== [IMAGE BUILD 시작] ===================='
+
+				echo '========== WORKSPACE : ${WORKSPACE} ======================='
+
+				sh '''
+					cd ${WORKSPACE}/${MODULE_NAME}
+					git checkout ${BRANCH_NAME}
+					
+					if [ "${BUILD_TOOL}" == "gradle" ]; then
+						cp ${WORKSPACE}/devops/etc/gradle.properties ${WORKSPACE}/${MODULE_NAME}
+						chmod 751 ./gradlew
+						./gradlew -debug clean build ${BUILD_OPTION} -xtest -b build.gradle --gradle-user-home=${WORKSPACE}
+					else
+						mvn clean package ${BUILD_OPTION} -DskipTests=true --settings=${WORKSPACE}/devops/etc/settings.xml
+					fi
+				'''
 
 				echo '==================== [IMAGE BUILD 종료] ===================='
 			}
