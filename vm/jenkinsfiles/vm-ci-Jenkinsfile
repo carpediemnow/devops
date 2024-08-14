@@ -1,8 +1,46 @@
 pipeline {
-    agent any
-    options {
-        skipStagesAfterUnstable()
-    }
+    
+	agent any
+    
+	options
+	{
+		timestamps()
+	}
+
+	environment
+	{
+
+		// Build Parameter
+		MODULE_NAME		= "${env.MODULE_NAME}"
+		BUILD_VERSION	= "${env.BUILD_VERSION}"
+		BRANCH_NAME		= getBranchName("${env.BRANCH_NAME}")
+		BUILD_TOOL		= "${env.BUILD_TOOL}"
+		BUILD_OPTION	= "${env.BUILD_OPTION}"
+
+		// 추가 파라미터
+		ARTIFACT_NAME	= "${env.ARTIFACT_NAME}"
+		ARTIFACT_PATH	= "${env.ARTIFACT_PATH}"
+		GROUP_ID		= "${env.GROUP_ID}"
+
+		// Etc Variable
+		GIT_NAMESPACE	= "${env.NAMESPACE}"
+		NEXUS_NAMESPACE	= getLowerCase(GIT_NAMESPACE)
+		ARCHIVE			= "${env.ARCHIVE}"
+
+		// Git Variable
+		GIT_URL			= 'gitlab.dspace.kt.co.kr'
+		GIT_PRJT_URL	= "${GIT_URL}/${GIT_NAMESPACE}/${MODULE_NAME}.git"
+		GIT_CRED_ID		= "${env.GIT_CRED_ID}"
+		GIT_TAG_NAME	= "${BRANCH_NAME}-${BUILD_VERSION}"
+
+		// Nexus Variable
+		NEXUS_URL		= 'https://nexus.dspace.kt.co.kr'
+		NEXUS_IMG_NAME	= "${NEXUS_NAMESPACE}/${MODULE_NAME}"
+		NEXUS_API_URL	= "${NEXUS_URL}/service/rest/v1/search"
+		NEXUS_CRED_ID	= "${env.NEXUS_CRED_ID}"
+
+	}
+	
     stages {
         stage('Build') {
             steps {
