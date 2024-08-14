@@ -195,15 +195,7 @@ pipeline
 
 				sh '''
 					cd ${WORKSPACE}/${MODULE_NAME}
-					git checkout ${BRANCH_NAME}
 					
-					if [ "${BUILD_TOOL}" == "gradle" ]; then
-						cp ${WORKSPACE}/devops/etc/gradle.properties ${WORKSPACE}/${MODULE_NAME}
-						chmod 751 ./gradlew
-						./gradlew -debug clean build ${BUILD_OPTION} -xtest -b build.gradle --gradle-user-home=${WORKSPACE}
-					else
-						mvn clean package ${BUILD_OPTION} -DskipTests=true --settings=${WORKSPACE}/devops/etc/settings.xml
-					fi
 				'''
 
 				echo '==================== [IMAGE BUILD 종료] ===================='
