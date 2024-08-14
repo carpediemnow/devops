@@ -1,4 +1,5 @@
-pipeline {
+pipeline 
+{
     
 	agent any
     
@@ -7,11 +8,11 @@ pipeline {
 		timestamps()
 	}
 
-	// environment
-	// {
+	environment
+	{
 
-	// 	// Build Parameter
-	// 	MODULE_NAME		= "${env.MODULE_NAME}"
+		// Build Parameter
+		MODULE_NAME		= "${env.MODULE_NAME}"
 	// 	BUILD_VERSION	= "${env.BUILD_VERSION}"
 	// 	BRANCH_NAME		= getBranchName("${env.BRANCH_NAME}")
 	// 	BUILD_TOOL		= "${env.BUILD_TOOL}"
@@ -39,24 +40,73 @@ pipeline {
 	// 	NEXUS_API_URL	= "${NEXUS_URL}/service/rest/v1/search"
 	// 	NEXUS_CRED_ID	= "${env.NEXUS_CRED_ID}"
 
-	// }
+	}
 
-    stages {
-        stage('Build') {
-            steps {
-                sh 'make'
+    stages 
+	{
+        stage ( 'Version Check' ) 
+		{
+            steps 
+			{
+				echo '==================== [VERSION CHECK 시작] ===================='
+
+				echo '==================== [VERSION CHECK 종료] ===================='
             }
         }
-        stage('Test'){
-            steps {
-                sh 'make check'
-                junit 'reports/**/*.xml'
+        
+		stage ( 'Image Check' )
+		{
+            steps 
+			{
+                echo '==================== [IMAGE CHECK 시작] ===================='
+
+				echo '==================== [IMAGE CHECK 종료] ===================='
             }
         }
-        stage('Deploy') {
-            steps {
-                sh 'make publish'
+        
+		stage ( 'Source Clone' )
+		{
+            steps 
+			{
+                echo '==================== [SOURCE CLONE 시작] ===================='
+
+
+				echo '==================== [SOURCE CLONE 종료] ===================='
             }
         }
+
+		stage ( 'Devops Clone' )
+		{
+			steps 
+			{
+				echo '==================== [DEVOPS CLONE 시작] ===================='
+
+				echo '==================== [DEVOPS CLONE 종료] ===================='
+			}
+
+		}
+
+		stage ( 'Image Build' )
+		{
+			steps
+			{
+				echo '==================== [IMAGE BUILD 시작] ===================='
+
+				echo '==================== [IMAGE BUILD 종료] ===================='
+			}
+
+		}
+
+		stage ( 'Image Push' )
+		{
+			steps
+			{
+				echo '==================== [IMAGE PUSH 시작] ===================='
+
+				echo '==================== [IMAGE PUSH 종료] ===================='
+			}
+
+
+		}
     }
 }
