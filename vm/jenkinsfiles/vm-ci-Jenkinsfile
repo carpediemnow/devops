@@ -14,7 +14,7 @@ pipeline
 		// Build Parameter
 		MODULE_NAME		= "${env.MODULE_NAME}"
 		BUILD_VERSION	= "${env.BUILD_VERSION}"
-	// 	BRANCH_NAME		= getBranchName("${env.BRANCH_NAME}")
+		BRANCH_NAME		= getBranchName("${env.BRANCH_NAME}")
 	// 	BUILD_TOOL		= "${env.BUILD_TOOL}"
 	// 	BUILD_OPTION	= "${env.BUILD_OPTION}"
 
