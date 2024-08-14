@@ -50,6 +50,22 @@ pipeline
 			{
 				echo '==================== [VERSION CHECK 시작] ===================='
 
+				script
+				{
+					if ( BUILD_VERSION == null )
+					{
+						error("[오류] 빌드 버전을 입력해야 합니다.")
+					}
+				}
+
+				printMsg([
+					"[빌드정보]",
+					"모듈명         : "	+ MODULE_NAME,
+					"넥서스이미지명  : "	+ NEXUS_IMG_NAME,
+					"빌드버전       : "	+ BUILD_VERSION,
+					"브랜치         : "	+ BRANCH_NAME
+				])
+
 				echo '==================== [VERSION CHECK 종료] ===================='
             }
         }
