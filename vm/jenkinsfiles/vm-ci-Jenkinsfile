@@ -13,7 +13,7 @@ pipeline
 
 		// Build Parameter
 		MODULE_NAME		= "${env.MODULE_NAME}"
-	// 	BUILD_VERSION	= "${env.BUILD_VERSION}"
+		BUILD_VERSION	= "${env.BUILD_VERSION}"
 	// 	BRANCH_NAME		= getBranchName("${env.BRANCH_NAME}")
 	// 	BUILD_TOOL		= "${env.BUILD_TOOL}"
 	// 	BUILD_OPTION	= "${env.BUILD_OPTION}"
@@ -109,4 +109,59 @@ pipeline
 
 		}
     }
+
+	post
+	{
+		always
+		{
+			echo '==================== [빌드종료] ===================='
+		}
+		success
+		{
+			echo '==================== [빌드성공] ===================='
+		}
+		failure
+		{
+			echo '==================== [빌드실패] ===================='
+		}
+	}
+}
+
+def printMsg(msgList)
+{
+
+	String text = "=================================================\n"
+
+	for ( msg in msgList )
+	{
+		text += " > " + msg + "\n"
+	}
+
+	text += "=================================================\n"
+
+	echo text
+
+}
+
+
+def getBranchName(branchParam)
+{
+
+	def branchNames = branchParam.split ( '/' ) 
+
+	if ( branchNames.length != 2 )
+	{
+		error("[오류] 브랜치 정보가 유효하지 않습니다.[브랜치] : ${branchParam}")
+	}
+
+	return branchNames[1]
+
+}
+
+
+def getLowerCase(namespace)
+{
+
+	return namespace.toLowerCase()
+
 }
